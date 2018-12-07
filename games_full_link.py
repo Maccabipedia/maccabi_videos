@@ -59,7 +59,7 @@ def get_full_game_links_json():
         return json.load(f)
 
 
-def test(page_name, full_game_link):
+def upload_full_game_link(page_name, full_game_link):
     page = pw.Page(site, page_name)
 
     if not page.exists():
@@ -98,7 +98,7 @@ def main():
             try:
                 current_game = find_game_by_season_and_fixture(g, season, fixture)
                 current_page_name = generate_page_name_from_game(current_game)
-                test(current_page_name, full_game_link)
+                upload_full_game_link(current_page_name, full_game_link)
             except Exception as e:
                 print(e)
 
