@@ -175,20 +175,9 @@ def handle_existing_page(game_page, game):
 
     arguments = __get_football_game_template_with_maccabistats_game_value(game)
 
-    for argument_name, argument_value in arguments.items():
-        if str(argument_value) != football_game_template.get(argument_name).value and SHOULD_SHOW_DIFF:
-            logger.info("Found diff between arguments on this argument_name: {arg_name}\n"
-                        "existing value: {existing_value}\nnew_value: {new_value}".
-                        format(arg_name=argument_name, existing_value=football_game_template.get(argument_name).value,
-                               new_value=argument_value))
-
-            football_game_template.add(argument_name, argument_value)
+    football_game_template.add(PLAYERS_EVENTS, arguments[PLAYERS_EVENTS])
 
     game_page.text = parsed_mw_text
-
-    if REFRESH_PAGES:
-        from random import randint
-        game_page.text += "<!--{num}-->".format(num=randint(0, 10000))
 
 
 def handle_new_page(game_page, game):
@@ -223,7 +212,7 @@ def create_or_update_game_page(game):
     logger.info("")  # Empty line
     if SHOULD_SAVE:
         logger.info("Saving {name}".format(name=game_page.title()))
-        game_page.save(summary="MaccabiBot - Add games")
+        game_page.save(summary="MaccabiBot - Updating opponents players events")
     else:
         logger.info("Not saving {name}".format(name=game_page.title()))
 
@@ -266,7 +255,7 @@ def main():
 
     all_games = get_games_to_add()
 
-    games_to_add = all_games
+    games_to_add = all_games.played_at("1991-11-23")
     for g in games_to_add:
         create_or_update_game_page(g)
 
