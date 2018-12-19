@@ -115,7 +115,7 @@ def get_players_events_for_template(game):
 
     # Opponent players
     unsorted_events.extend(
-        [PlayerEvent(player.name, player.number, player_event.time_occur.min, player_event.event_type, getattr(player_event, "goal_type", None),
+        [PlayerEvent(player.name, player.number, player_event.time_occur, player_event.event_type, getattr(player_event, "goal_type", None),
                      maccabi_player=False)
          for player in game.not_maccabi_team.players
          for player_event in player.events])
