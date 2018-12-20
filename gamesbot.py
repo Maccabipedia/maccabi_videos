@@ -128,7 +128,8 @@ def get_players_events_for_template(game):
 
     events = sorted(unsorted_events, key=lambda player_event: player_event.minute_occur)
 
-    wikimedia_formatted_events = ",".join(player_event.__maccabipedia__() for player_event in events)
+    # Remove the last new line
+    wikimedia_formatted_events = ",".join(player_event.__maccabipedia__() for player_event in events).rstrip()
 
     return wikimedia_formatted_events
 
@@ -212,7 +213,7 @@ def create_or_update_game_page(game):
     logger.info("")  # Empty line
     if SHOULD_SAVE:
         logger.info("Saving {name}".format(name=game_page.title()))
-        game_page.save(summary="MaccabiBot - Updating opponents players events")
+        game_page.save(summary="MaccabiBot - Updating opponents players events (0 minute)")
     else:
         logger.info("Not saving {name}".format(name=game_page.title()))
 
@@ -255,7 +256,7 @@ def main():
 
     all_games = get_games_to_add()
 
-    games_to_add = all_games.played_at("1991-11-23")
+    games_to_add = all_games
     for g in games_to_add:
         create_or_update_game_page(g)
 
