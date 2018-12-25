@@ -41,6 +41,7 @@ PLAYERS_EVENTS = "אירועי שחקנים"
 site = pw.Site()
 
 REFRESH_PAGES = False
+JUST_EVENTS = False
 SHOULD_SAVE = True
 SHOULD_SHOW_DIFF = True
 SHOULD_CHECK_FOR_UPDATE_IN_EXISTING_PAGES = False
@@ -187,14 +188,37 @@ def handle_new_page(game_page, game):
     :type game: maccabistats.models.game_data.GameData
     """
 
-    football_game_template = get_football_games_template_object()
+    if JUST_EVENTS:
 
-    arguments = __get_football_game_template_with_maccabistats_game_value(game)
+        football_game_template = get_football_games_template_object()
 
-    for argument_name, argument_value in arguments.items():
-        football_game_template.add(argument_name, argument_value)
+        arguments = __get_football_game_template_with_maccabistats_game_value(game)
 
-    game_page.text = str(football_game_template)
+        for argument_name, argument_value in arguments.items():
+            football_game_template.add(argument_name, argument_value)
+
+        game_page.text = str(football_game_template)
+
+    else:
+        parsed_mw_text = mwparserfromhell.parse(game_page.text)
+        football_game_template = parsed_mw_text.filter_templates(football_games_template_name)[0]
+
+        arguments = __get_football_game_template_with_maccabistats_game_value(game)
+
+        for argument_name, argument_value in arguments.items():
+            if str(argument_value) != football_game_template.get(argument_name).value and SHOULD_SHOW_DIFF:
+                logger.info("Found diff between arguments on this argument_name: {arg_name}\n"
+                            "existing value: {existing_value}\nnew_value: {new_value}".
+                            format(arg_name=argument_name, existing_value=football_game_template.get(argument_name).value,
+                                   new_value=argument_value))
+
+                football_game_template.add(argument_name, argument_value)
+
+        game_page.text = parsed_mw_text
+
+        if REFRESH_PAGES:
+            from random import randint
+            game_page.text += "<!--{num}-->".format(num=randint(0, 10000))
 
 
 def create_or_update_game_page(game):
@@ -256,7 +280,7 @@ def main():
 
     all_games = get_games_to_add()
 
-    games_to_add = all_games
+    games_to_add = all_games[-1:]
     for g in games_to_add:
         create_or_update_game_page(g)
 
