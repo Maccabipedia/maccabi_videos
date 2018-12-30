@@ -41,7 +41,7 @@ PLAYERS_EVENTS = "אירועי שחקנים"
 site = pw.Site()
 
 REFRESH_PAGES = False
-JUST_EVENTS = False
+JUST_EVENTS = True
 SHOULD_SAVE = True
 SHOULD_SHOW_DIFF = True
 SHOULD_CHECK_FOR_UPDATE_IN_EXISTING_PAGES = False
@@ -172,32 +172,15 @@ def handle_existing_page(game_page, game):
     :type game: maccabistats.models.game_data.GameData
     """
 
-    parsed_mw_text = mwparserfromhell.parse(game_page.text)
-    football_game_template = parsed_mw_text.filter_templates(football_games_template_name)[0]
-
-    arguments = __get_football_game_template_with_maccabistats_game_value(game)
-
-    football_game_template.add(PLAYERS_EVENTS, arguments[PLAYERS_EVENTS])
-
-    game_page.text = parsed_mw_text
-
-
-def handle_new_page(game_page, game):
-    """
-    :type game_page: pywikibot.page.Page
-    :type game: maccabistats.models.game_data.GameData
-    """
-
     if JUST_EVENTS:
-
-        football_game_template = get_football_games_template_object()
+        parsed_mw_text = mwparserfromhell.parse(game_page.text)
+        football_game_template = parsed_mw_text.filter_templates(football_games_template_name)[0]
 
         arguments = __get_football_game_template_with_maccabistats_game_value(game)
 
-        for argument_name, argument_value in arguments.items():
-            football_game_template.add(argument_name, argument_value)
+        football_game_template.add(PLAYERS_EVENTS, arguments[PLAYERS_EVENTS])
 
-        game_page.text = str(football_game_template)
+        game_page.text = parsed_mw_text
 
     else:
         parsed_mw_text = mwparserfromhell.parse(game_page.text)
@@ -221,6 +204,22 @@ def handle_new_page(game_page, game):
             game_page.text += "<!--{num}-->".format(num=randint(0, 10000))
 
 
+def handle_new_page(game_page, game):
+    """
+    :type game_page: pywikibot.page.Page
+    :type game: maccabistats.models.game_data.GameData
+    """
+
+    football_game_template = get_football_games_template_object()
+
+    arguments = __get_football_game_template_with_maccabistats_game_value(game)
+
+    for argument_name, argument_value in arguments.items():
+        football_game_template.add(argument_name, argument_value)
+
+    game_page.text = str(football_game_template)
+
+
 def create_or_update_game_page(game):
     page_name = generate_page_name_from_game(game)
 
@@ -237,7 +236,7 @@ def create_or_update_game_page(game):
     logger.info("")  # Empty line
     if SHOULD_SAVE:
         logger.info("Saving {name}".format(name=game_page.title()))
-        game_page.save(summary="MaccabiBot - Updating opponents players events (0 minute)")
+        game_page.save(summary="MaccabiBot - Uploading Games")
     else:
         logger.info("Not saving {name}".format(name=game_page.title()))
 
@@ -280,7 +279,7 @@ def main():
 
     all_games = get_games_to_add()
 
-    games_to_add = all_games[-1:]
+    games_to_add = all_games.played_at("2006-05-18")
     for g in games_to_add:
         create_or_update_game_page(g)
 
