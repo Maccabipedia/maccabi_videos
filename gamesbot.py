@@ -279,7 +279,7 @@ def main():
 
     all_games = get_games_to_add()
 
-    games_to_add = all_games.played_at("2006-05-18")
+    games_to_add = all_games[-1:]
     for g in games_to_add:
         create_or_update_game_page(g)
 
