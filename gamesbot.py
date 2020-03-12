@@ -1,3 +1,4 @@
+from typing import AnyStr, List
 import pywikibot as pw
 from maccabistats import get_maccabi_stats_as_newest_wrapper
 from pywikibot import pagegenerators, Category
@@ -18,7 +19,7 @@ football_games_prefix = "משחק"
 football_games_template_name = "קטלוג משחקים"
 football_games_category_name = "קטגוריה:משחקים"
 
-# Legend games templates args consts:
+# Legend games templates args consts:s
 GAME_ID = "תאריך המשחק"
 GAME_HOUR = "שעת המשחק"
 DAY_OF_WEEK = "יום המשחק בשבוע"
@@ -241,7 +242,7 @@ def create_or_update_game_page(game):
         logger.info("Not saving {name}".format(name=game_page.title()))
 
 
-def get_games_that_has_existing_pages(games):
+def get_games_that_has_existing_pages(games: List[AnyStr]):
     existing_games = []
     existing_games_pages = get_all_football_games_category_pages()
     for game_page in existing_games_pages:
@@ -295,5 +296,17 @@ def main():
     logger.info("Finished handling existing games.")
 
 
+def refresh_from_maccabi_site():
+    from maccabistats import run_maccabitlv_site_source, merge_maccabi_games_from_all_input_serialized_sources, serialize_maccabi_games
+
+    run_maccabitlv_site_source()
+    newer_games = merge_maccabi_games_from_all_input_serialized_sources()
+    serialize_maccabi_games(newer_games)
+
+
 if __name__ == '__main__':
+    update_just_last_maccabi_game = True
+
+    if update_just_last_maccabi_game:
+        refresh_from_maccabi_site()
     main()
